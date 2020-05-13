@@ -1,30 +1,34 @@
 .PHONY: tools
 tools:
-	go mod tidy
-	go install \
+	# go mod tidy
+	go get \
 		github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway \
 		github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger \
-		github.com/golang/protobuf/protoc-gen-go
-	git clone https://github.com/grpc-ecosystem/grpc-gateway
+		github.com/golang/protobuf/protoc-gen-go \
+		github.com/rakyll/statik
+	# git clone https://github.com/grpc-ecosystem/grpc-gateway
 
 build:
 	@echo Compiling proto files
-	@protoc -I. \
-		-I./grpc-gateway/third_party/googleapis \
-		--go_out=plugins=grpc:./example \
-		--grpc-gateway_out=logtostderr=true:. \
-		--swagger_out=logtostderr=true:. \
+	@protoc \
+		-I./example \
+		-I./third_party/grpc-gateway/ \
+		-I./third_party/googleapis \
+		--go_out=plugins=grpc,paths=source_relative:./example \
+		--grpc-gateway_out=./example \
+		--swagger_out=./third_party/OpenAPI/ \
 		./example/your_service.proto
-	@#protoc -I/usr/local/include -I. \
-	@# 	-I$GOPATH/src \
-	@# 	-I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
-	@# 	--grpc-gateway_out=logtostderr=true:. \
-	@# 	path/to/your_service.proto
+
+	@statik -m -f -src third_party/OpenAPI/
+
 	@echo Building example-grpc-gateway
 	@go build -v -o example-grpc-gateway github.com/pieterclaerhout/example-grpc-gateway
 
 run-server: build
 	./example-grpc-gateway --what=server
 	
-run-client: build
-	./example-grpc-gateway --what=client
+run-grpc-client: build
+	./example-grpc-gateway --what=grpc-client
+	
+run-rest-client: build
+	./example-grpc-gateway --what=rest-client

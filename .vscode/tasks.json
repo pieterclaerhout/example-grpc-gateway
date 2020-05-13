@@ -20,9 +20,17 @@
             ]
         },
         {
-            "label": "example-grpc-server: run client",
+            "label": "example-grpc-server: run gRPC client",
             "type": "shell",
-            "command": "make run-client",
+            "command": "make run-grpc-client",
+            "problemMatcher": [
+                "$go"
+            ]
+        },
+        {
+            "label": "example-grpc-server: run REST client",
+            "type": "shell",
+            "command": "make run-rest-client",
             "problemMatcher": [
                 "$go"
             ]
