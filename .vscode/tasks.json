@@ -1,0 +1,31 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "example-grpc-server: build",
+            "type": "shell",
+            "command": "make build",
+            "problemMatcher": [
+                "$go"
+            ]
+        },
+        {
+            "label": "example-grpc-server: run server",
+            "type": "shell",
+            "command": "make run-server",
+            "problemMatcher": [
+                "$go"
+            ]
+        },
+        {
+            "label": "example-grpc-server: run client",
+            "type": "shell",
+            "command": "make run-client",
+            "problemMatcher": [
+                "$go"
+            ]
+        }
+    ]
+}
