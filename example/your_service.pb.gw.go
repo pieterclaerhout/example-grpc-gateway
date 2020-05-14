@@ -15,6 +15,7 @@ import (
 
 	"github.com/golang/protobuf/descriptor"
 	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/utilities"
 	"google.golang.org/grpc"
@@ -65,6 +66,24 @@ func local_request_YourService_Echo_0(ctx context.Context, marshaler runtime.Mar
 
 }
 
+func request_AnotherService_HelloWorld_0(ctx context.Context, marshaler runtime.Marshaler, client AnotherServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq empty.Empty
+	var metadata runtime.ServerMetadata
+
+	msg, err := client.HelloWorld(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_AnotherService_HelloWorld_0(ctx context.Context, marshaler runtime.Marshaler, server AnotherServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq empty.Empty
+	var metadata runtime.ServerMetadata
+
+	msg, err := server.HelloWorld(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
 // RegisterYourServiceHandlerServer registers the http handlers for service YourService to "mux".
 // UnaryRPC     :call YourServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
@@ -87,6 +106,34 @@ func RegisterYourServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux
 		}
 
 		forward_YourService_Echo_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	return nil
+}
+
+// RegisterAnotherServiceHandlerServer registers the http handlers for service AnotherService to "mux".
+// UnaryRPC     :call AnotherServiceServer directly.
+// StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
+func RegisterAnotherServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server AnotherServiceServer) error {
+
+	mux.Handle("GET", pattern_AnotherService_HelloWorld_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_AnotherService_HelloWorld_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_AnotherService_HelloWorld_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -160,4 +207,73 @@ var (
 
 var (
 	forward_YourService_Echo_0 = runtime.ForwardResponseMessage
+)
+
+// RegisterAnotherServiceHandlerFromEndpoint is same as RegisterAnotherServiceHandler but
+// automatically dials to "endpoint" and closes the connection when "ctx" gets done.
+func RegisterAnotherServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+	conn, err := grpc.Dial(endpoint, opts...)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			if cerr := conn.Close(); cerr != nil {
+				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+			}
+			return
+		}
+		go func() {
+			<-ctx.Done()
+			if cerr := conn.Close(); cerr != nil {
+				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+			}
+		}()
+	}()
+
+	return RegisterAnotherServiceHandler(ctx, mux, conn)
+}
+
+// RegisterAnotherServiceHandler registers the http handlers for service AnotherService to "mux".
+// The handlers forward requests to the grpc endpoint over "conn".
+func RegisterAnotherServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterAnotherServiceHandlerClient(ctx, mux, NewAnotherServiceClient(conn))
+}
+
+// RegisterAnotherServiceHandlerClient registers the http handlers for service AnotherService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "AnotherServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "AnotherServiceClient"
+// doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
+// "AnotherServiceClient" to call the correct interceptors.
+func RegisterAnotherServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client AnotherServiceClient) error {
+
+	mux.Handle("GET", pattern_AnotherService_HelloWorld_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_AnotherService_HelloWorld_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_AnotherService_HelloWorld_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	return nil
+}
+
+var (
+	pattern_AnotherService_HelloWorld_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "another", "hello"}, "", runtime.AssumeColonVerbOpt(true)))
+)
+
+var (
+	forward_AnotherService_HelloWorld_0 = runtime.ForwardResponseMessage
 )

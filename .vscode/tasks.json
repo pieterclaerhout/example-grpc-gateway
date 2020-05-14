@@ -12,6 +12,22 @@
             ]
         },
         {
+            "label": "example-grpc-server: generate",
+            "type": "shell",
+            "command": "make generate",
+            "problemMatcher": [
+                "$go"
+            ]
+        },
+        {
+            "label": "example-grpc-server: install tools",
+            "type": "shell",
+            "command": "make install-tools",
+            "problemMatcher": [
+                "$go"
+            ]
+        },
+        {
             "label": "example-grpc-server: run server",
             "type": "shell",
             "command": "make run-server",
@@ -31,6 +47,14 @@
             "label": "example-grpc-server: run REST client",
             "type": "shell",
             "command": "make run-rest-client",
+            "problemMatcher": [
+                "$go"
+            ]
+        },
+        {
+            "label": "example-grpc-server: open documentation",
+            "type": "shell",
+            "command": "open http://localhost:8080",
             "problemMatcher": [
                 "$go"
             ]

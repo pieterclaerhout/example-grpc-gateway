@@ -3,21 +3,27 @@ package example
 import (
 	context "context"
 
-	"github.com/pieterclaerhout/go-log"
+	empty "github.com/golang/protobuf/ptypes/empty"
 )
 
-// YourService ...
 type YourService struct {
 }
 
-// New creates new server greeter
-func New() *YourService {
+func NewYourService() *YourService {
 	return &YourService{}
 }
 
-// Echo just sends back the input
-func (s *YourService) Echo(ctx context.Context, msg *StringMessage) (*StringMessage, error) {
-	// p, _ := peer.FromContext(ctx)
-	log.InfoDump(msg, "msg")
+func (s *YourService) Echo(c context.Context, msg *StringMessage) (*StringMessage, error) {
 	return msg, nil
+}
+
+type AnotherService struct {
+}
+
+func NewAnotherService() *AnotherService {
+	return &AnotherService{}
+}
+
+func (s *AnotherService) HelloWorld(c context.Context, empty *empty.Empty) (*StringMessage, error) {
+	return &StringMessage{Value: "Hello World"}, nil
 }
