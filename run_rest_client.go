@@ -23,7 +23,7 @@ func runRestClient(serverAddress string) error {
 func runRestClientForYourService(serverAddress string) error {
 
 	res, err := rek.Post(
-		"http://localhost:8080/v1/example/echo",
+		"http://"+serverAddress+"/v1/example/echo",
 		rek.Json(&example.StringMessage{
 			Value: "Hello From Your Service",
 		}),
@@ -31,6 +31,7 @@ func runRestClientForYourService(serverAddress string) error {
 	if err != nil {
 		return err
 	}
+	defer res.Body().Close()
 
 	body, _ := rek.BodyAsString(res.Body())
 
@@ -43,11 +44,12 @@ func runRestClientForYourService(serverAddress string) error {
 func runRestClientForAnotherService(serverAddress string) error {
 
 	res, err := rek.Get(
-		"http://localhost:8080/v1/another/hello",
+		"http://" + serverAddress + "/v1/another/hello",
 	)
 	if err != nil {
 		return err
 	}
+	defer res.Body().Close()
 
 	body, _ := rek.BodyAsString(res.Body())
 

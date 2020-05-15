@@ -31,7 +31,7 @@ func getOpenAPIHandler() http.Handler {
 
 func runServer(serverAddress string) error {
 
-	lis, err := net.Listen("tcp", "0.0.0.0:8080")
+	lis, err := net.Listen("tcp", serverAddress)
 	if err != nil {
 		return err
 	}
@@ -45,11 +45,9 @@ func runServer(serverAddress string) error {
 	example.RegisterYourServiceServer(s, example.NewYourService())
 	example.RegisterAnotherServiceServer(s, example.NewAnotherService())
 
-	dialAddr := "dns:///0.0.0.0:8080"
-
 	conn, err := grpc.DialContext(
 		context.Background(),
-		dialAddr,
+		"dns:///"+serverAddress,
 		grpc.WithInsecure(),
 	)
 	if err != nil {
@@ -74,10 +72,8 @@ func runServer(serverAddress string) error {
 
 	oa := getOpenAPIHandler()
 
-	gatewayAddr := "0.0.0.0:8080"
-
 	gwServer := &http.Server{
-		Addr: gatewayAddr,
+		Addr: serverAddress,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if strings.HasPrefix(r.URL.Path, "/v1") {
 				gwmux.ServeHTTP(w, r)
@@ -87,7 +83,7 @@ func runServer(serverAddress string) error {
 		}),
 	}
 
-	log.Info("Starting gRPC gateway:", gatewayAddr)
+	log.Info("Starting gRPC gateway:", serverAddress)
 
 	g := errgroup.Group{}
 
