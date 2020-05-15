@@ -23,7 +23,7 @@ func main() {
 	case "server":
 		err = runServer(*serverEndpoint)
 	case "grpc-client":
-		err = runGRPCClient(*serverEndpoint)
+		err = runGRPCClient("example-grpc-gateway.twixlmedia.com:80")
 	case "rest-client":
 		err = runRestClient(*serverEndpoint)
 	default:

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/hkwi/h2c"
 	"github.com/pieterclaerhout/example-grpc-gateway/example"
 	"github.com/pieterclaerhout/go-log"
 	"github.com/rakyll/statik/fs"
@@ -39,7 +40,7 @@ func runServer(serverAddress string) error {
 	m := cmux.New(lis)
 
 	grpcListener := m.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"))
-	httpListener := m.Match(cmux.HTTP1Fast())
+	httpListener := m.Match(cmux.HTTP2(), cmux.HTTP1Fast())
 
 	s := grpc.NewServer()
 	example.RegisterYourServiceServer(s, example.NewYourService())
@@ -74,13 +75,15 @@ func runServer(serverAddress string) error {
 
 	gwServer := &http.Server{
 		Addr: serverAddress,
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if strings.HasPrefix(r.URL.Path, "/v1") {
-				gwmux.ServeHTTP(w, r)
-				return
-			}
-			oa.ServeHTTP(w, r)
-		}),
+		Handler: &h2c.Server{
+			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if strings.HasPrefix(r.URL.Path, "/v1") {
+					gwmux.ServeHTTP(w, r)
+					return
+				}
+				oa.ServeHTTP(w, r)
+			}),
+		},
 	}
 
 	log.Info("Starting gRPC gateway:", serverAddress)

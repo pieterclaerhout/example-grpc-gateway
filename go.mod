@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/golang/protobuf v1.4.2
 	github.com/grpc-ecosystem/grpc-gateway v1.14.5
+	github.com/hkwi/h2c v0.0.0-20180807060133-3511cd63f456
 	github.com/lucperkins/rek v0.1.3
 	github.com/pieterclaerhout/go-log v1.10.0
 	github.com/rakyll/statik v0.1.7
