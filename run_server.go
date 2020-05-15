@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"mime"
 	"net"
 	"net/http"
@@ -12,10 +11,13 @@ import (
 	"github.com/pieterclaerhout/example-grpc-gateway/example"
 	"github.com/pieterclaerhout/go-log"
 	"github.com/rakyll/statik/fs"
+	"github.com/soheilhy/cmux"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 )
 
 func getOpenAPIHandler() http.Handler {
+
 	mime.AddExtensionType(".svg", "image/svg+xml")
 
 	statikFS, err := fs.New()
@@ -24,31 +26,31 @@ func getOpenAPIHandler() http.Handler {
 	}
 
 	return http.FileServer(statikFS)
+
 }
 
-func runServer() error {
+func runServer(serverAddress string) error {
 
-	lis, err := net.Listen("tcp", *serverEndpoint)
+	lis, err := net.Listen("tcp", "0.0.0.0:8080")
 	if err != nil {
 		return err
 	}
+
+	m := cmux.New(lis)
+
+	grpcListener := m.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"))
+	httpListener := m.Match(cmux.HTTP1Fast())
 
 	s := grpc.NewServer()
 	example.RegisterYourServiceServer(s, example.NewYourService())
 	example.RegisterAnotherServiceServer(s, example.NewAnotherService())
 
-	go func() {
-		log.Info("Starting gRPC server:", *serverEndpoint)
-		log.Fatal(s.Serve(lis))
-	}()
-
-	dialAddr := fmt.Sprintf("dns:///%s", *serverEndpoint)
+	dialAddr := "dns:///0.0.0.0:8080"
 
 	conn, err := grpc.DialContext(
 		context.Background(),
 		dialAddr,
 		grpc.WithInsecure(),
-		grpc.WithBlock(),
 	)
 	if err != nil {
 		return err
@@ -77,7 +79,6 @@ func runServer() error {
 	gwServer := &http.Server{
 		Addr: gatewayAddr,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			log.Info(r.URL.Path)
 			if strings.HasPrefix(r.URL.Path, "/v1") {
 				gwmux.ServeHTTP(w, r)
 				return
@@ -87,6 +88,19 @@ func runServer() error {
 	}
 
 	log.Info("Starting gRPC gateway:", gatewayAddr)
-	return gwServer.ListenAndServe()
+
+	g := errgroup.Group{}
+
+	g.Go(func() error {
+		return s.Serve(grpcListener)
+	})
+
+	g.Go(func() error {
+		return gwServer.Serve(httpListener)
+	})
+
+	g.Go(m.Serve)
+
+	return g.Wait()
 
 }

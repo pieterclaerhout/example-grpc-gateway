@@ -9,9 +9,10 @@ import (
 	"google.golang.org/grpc"
 )
 
-func runGRPCClient() error {
+func runGRPCClient(serverAddress string) error {
 
-	conn, err := grpc.Dial(*serverEndpoint, grpc.WithInsecure())
+	// conn, err := grpc.Dial(*serverEndpoint, grpc.WithInsecure())
+	conn, err := grpc.Dial("0.0.0.0:8080", grpc.WithInsecure())
 	if err != nil {
 		return err
 	}

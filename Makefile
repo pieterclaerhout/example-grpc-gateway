@@ -1,3 +1,7 @@
+PROJECT_NAME := example-grpc-gateway
+REVISION := 1.0
+DOCKER_ACCOUNT := pieterclaerhout
+
 install-tools:
 	@go get github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 	@go get github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
@@ -14,17 +18,23 @@ generate:
 		--grpc-gateway_out=./example \
 		--swagger_out=./third_party/OpenAPI/ \
 		./example/your_service.proto
+	@echo Packaging resources
 	@statik -m -f -src third_party/OpenAPI/
 
 build: generate
-	@echo Building example-grpc-gateway
-	@go build -v -o example-grpc-gateway github.com/pieterclaerhout/example-grpc-gateway
+	@echo Building $(PROJECT_NAME)
+	@go build -v -o $(PROJECT_NAME) github.com/pieterclaerhout/$(PROJECT_NAME)
+
+publish: build
+	@docker build -t $(PROJECT_NAME) .
+	@docker tag $(PROJECT_NAME) $(DOCKER_ACCOUNT)/$(PROJECT_NAME):$(REVISION)
+	@docker push $(DOCKER_ACCOUNT)/$(PROJECT_NAME):$(REVISION)
 
 run-server: build
-	@./example-grpc-gateway --what=server
+	@./$(PROJECT_NAME) --what=server
 	
 run-grpc-client: build
-	@./example-grpc-gateway --what=grpc-client
+	@./$(PROJECT_NAME) --what=grpc-client
 	
 run-rest-client: build
-	@./example-grpc-gateway --what=rest-client
+	@./$(PROJECT_NAME) --what=rest-client

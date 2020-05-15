@@ -12,6 +12,14 @@
             ]
         },
         {
+            "label": "example-grpc-server: publish",
+            "type": "shell",
+            "command": "make publish",
+            "problemMatcher": [
+                "$go"
+            ]
+        },
+        {
             "label": "example-grpc-server: generate",
             "type": "shell",
             "command": "make generate",

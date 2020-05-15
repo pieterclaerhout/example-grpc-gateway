@@ -6,13 +6,13 @@ import (
 	"github.com/pieterclaerhout/go-log"
 )
 
-func runRestClient() error {
+func runRestClient(serverAddress string) error {
 
-	if err := runRestClientForYourService(); err != nil {
+	if err := runRestClientForYourService(serverAddress); err != nil {
 		return err
 	}
 
-	if err := runRestClientForAnotherService(); err != nil {
+	if err := runRestClientForAnotherService(serverAddress); err != nil {
 		return err
 	}
 
@@ -20,7 +20,7 @@ func runRestClient() error {
 
 }
 
-func runRestClientForYourService() error {
+func runRestClientForYourService(serverAddress string) error {
 
 	res, err := rek.Post(
 		"http://localhost:8080/v1/example/echo",
@@ -40,7 +40,7 @@ func runRestClientForYourService() error {
 
 }
 
-func runRestClientForAnotherService() error {
+func runRestClientForAnotherService(serverAddress string) error {
 
 	res, err := rek.Get(
 		"http://localhost:8080/v1/another/hello",

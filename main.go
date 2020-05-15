@@ -3,12 +3,11 @@ package main
 import (
 	"flag"
 
+	_ "github.com/pieterclaerhout/example-grpc-gateway/statik" // Statik resources
 	"github.com/pieterclaerhout/go-log"
-
-	_ "github.com/pieterclaerhout/example-grpc-gateway/statik"
 )
 
-var serverEndpoint = flag.String("endpoint", "0.0.0.0:9090", "gRPC server endpoint")
+var serverEndpoint = flag.String("endpoint", "0.0.0.0:8080", "gRPC and HTTP server endpoint")
 var what = flag.String("what", "server", "server|client")
 
 func main() {
@@ -22,11 +21,11 @@ func main() {
 
 	switch *what {
 	case "server":
-		err = runServer()
+		err = runServer(*serverEndpoint)
 	case "grpc-client":
-		err = runGRPCClient()
+		err = runGRPCClient(*serverEndpoint)
 	case "rest-client":
-		err = runRestClient()
+		err = runRestClient(*serverEndpoint)
 	default:
 		log.Fatal("Incorrect option for argument what:", *what)
 	}
