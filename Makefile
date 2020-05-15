@@ -11,6 +11,7 @@ install-tools:
 generate:
 	@echo Compiling proto files
 	@protoc \
+		-I/usr/local/include \
 		-I./example \
 		-I./third_party/grpc-gateway/ \
 		-I./third_party/googleapis \
@@ -23,9 +24,9 @@ generate:
 
 build: generate
 	@echo Building $(PROJECT_NAME)
-	@go build -v -o $(PROJECT_NAME) github.com/pieterclaerhout/$(PROJECT_NAME)
+	@CGO_ENABLED=0 go build -trimpath --ldflags '-extldflags -static' -v -o $(PROJECT_NAME) github.com/pieterclaerhout/$(PROJECT_NAME)
 
-publish: build
+publish:
 	@docker build -t $(PROJECT_NAME) .
 	@docker tag $(PROJECT_NAME) $(DOCKER_ACCOUNT)/$(PROJECT_NAME):$(REVISION)
 	@docker push $(DOCKER_ACCOUNT)/$(PROJECT_NAME):$(REVISION)
